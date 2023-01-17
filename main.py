@@ -24,24 +24,30 @@ MENU = {
     }
 }
 
-
 # Starting values
-water = 300
-milk = 200
-coffee = 100
-money = 0
+resources = {"water": 300,
+             "milk": 200,
+             "coffee": 150,
+             "money": 0}
 
-user_input = input("What would you like? (espresso/latte/cappuccino) \n")
 
-while user_input != "exit":
-    if user_input == "report":
-        print(f"Water: {water}ml\nMilk: {milk}ml\nCoffee: {coffee}g\nMoney: ${money}")
-        user_input = input("What would you like? (espresso/latte/cappuccino) \n")
+is_running = True
+
+while is_running:
+    user_input = input("What would you like? (espresso/latte/cappuccino) \n")
+
+    if user_input == "off":
+        is_running = False
         continue
 
-    while user_input not in ["espresso", "latte", "cappuccino", "report"]:
+    if user_input not in ["espresso", "latte", "cappuccino", "report"]:
         print(f"Sorry we do not have {user_input}")
-        user_input = input("What would you like? (espresso/latte/cappuccino) \n")
+        continue
+
+    if user_input == "report":
+        print(f"Water: {resources['water']}ml\nMilk: {resources['milk']}ml\nCoffee: {resources['coffee']}g")
+        print(f"Money: ${resources['money']}")
+        continue
 
     total = 0
 
@@ -57,36 +63,25 @@ while user_input != "exit":
     pennies = int(input("How many pennies?: "))
     total += pennies
 
-    total = round(total/100, 2)
+    total = round(total / 100, 2)
     change = round(total - MENU[user_input]["cost"], 2)
 
     if MENU[user_input]["cost"] > total:
         print("Sorry, You do not have enough money")
     else:
         have_enough_ingredients = True
-        drink_water = MENU[user_input]["ingredients"]["water"]
-        drink_milk = MENU[user_input]["ingredients"]["milk"] if "milk" in MENU[user_input]["ingredients"] else 0
-        drink_coffee = MENU[user_input]["ingredients"]["coffee"]
 
-        if drink_water > water:
-            print("Sorry, Not enough water")
-            have_enough_ingredients = False
-
-        if drink_milk > milk:
-            print("Sorry, Not enough milk")
-            have_enough_ingredients = False
-
-        if drink_coffee > coffee:
-            print("Sorry, Not enough coffee")
-            have_enough_ingredients = False
+        for ingredient in (MENU[user_input]["ingredients"].keys()):
+            ingredient_amount = MENU[user_input]["ingredients"][ingredient]
+            if ingredient_amount > resources[ingredient]:
+                print(f"Sorry, Not enough {ingredient}")
+                have_enough_ingredients = False
+                continue
+            else:
+                resources[ingredient] -= ingredient_amount
 
         if have_enough_ingredients:
-            water -= drink_water
-            milk -= drink_milk
-            coffee -= drink_coffee
-            money += total - change
+            resources["money"] += round(total - change, 2)
 
             print(f"Your change is ${change}")
             print(f"Here is your {user_input}")
-
-    user_input = input("What would you like? (espresso/latte/cappuccino) \n")
